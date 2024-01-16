@@ -257,7 +257,7 @@ class EmotionDetector:
             pass
         finally:
             cap.release()
-            cv2.destroyAllWindows()
+            # cv2.destroyAllWindows()
         return emotion_counts
 
 # onnx_model_path = 'emotion-ferplus-8.onnx'
