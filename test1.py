@@ -69,7 +69,7 @@ def video_frame_callback(frame: av.VideoFrame) -> av.VideoFrame:
     )
     net.setInput(blob)
     output = net.forward()
-
+    print("Output shape:", output.shape)
     h, w = image.shape[:2]
 
     # Convert the output array into a structured form.
