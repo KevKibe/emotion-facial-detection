@@ -239,10 +239,10 @@ def main():
     st.title("Emotion Detector")
 
     try:
-        webrtc_streamer(
+        webrtc_ctx = webrtc_streamer(
             key="emotion-detector",
-            # video_processor_factory=EmotionDetector
-            # async_processing=True,
+            video_processor_factory=EmotionDetector,
+            async_processing=True,
         )
     except Exception as e:
         st.error(f"An error occurred: {e}")
