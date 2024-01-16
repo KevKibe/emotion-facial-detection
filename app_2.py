@@ -235,12 +235,16 @@ class EmotionDetector:
 
 def main():
     st.title("Emotion Detector")
-    
-    webrtc_ctx = webrtc_streamer(
-        key="emotion-detector",
-        video_processor_factory=EmotionDetector,
-        async_processing=True,
-    )
+
+    try:
+        webrtc_ctx = webrtc_streamer(
+            key="emotion-detector",
+            video_processor_factory=EmotionDetector,
+            async_processing=True,
+        )
+    except Exception as e:
+        st.error(f"An error occurred: {e}")
 
 if __name__ == "__main__":
     main()
+
