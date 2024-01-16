@@ -39,7 +39,7 @@ class Detection(NamedTuple):
     box: np.ndarray
 
 
-@st.cache_resource  # type: ignore
+# @st.cache_resource  # type: ignore
 def generate_label_colors():
     return np.random.uniform(0, 255, size=(len(CLASSES), 3))
 
