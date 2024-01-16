@@ -74,7 +74,7 @@ def video_frame_callback(frame: av.VideoFrame) -> av.VideoFrame:
 
     # Convert the output array into a structured form.
     output = output.squeeze()  # (1, 1, N, 7) -> (N, 7)
-    output = output[output[:, 2] >= score_threshold]
+    output = output[output[:, 7] >= score_threshold]
     detections = [
         Detection(
             class_id=int(detection[1]),
