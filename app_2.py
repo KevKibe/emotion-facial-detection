@@ -180,6 +180,7 @@ class EmotionDetector:
         return cv2.waitKey(1) & 0xFF == ord('q')
 
     def on_frame(self, frame):
+        FRAME_WINDOW = st.image([])
         img_ori = frame
         rect = cv2.resize(img_ori, (self.width, self.height))
         rect = cv2.cvtColor(rect, cv2.COLOR_BGR2RGB)
@@ -231,6 +232,7 @@ class EmotionDetector:
                 lineType=cv2.LINE_AA
             )
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        FRAME_WINDOW.image(frame)
         return frame
 
 def main():
