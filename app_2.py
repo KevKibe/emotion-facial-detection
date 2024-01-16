@@ -20,8 +20,8 @@ class EmotionDetector:
         ]
         self.strides = [8.0, 16.0, 32.0, 64.0]
         self.threshold = 0.5
-        self.model = cv2.dnn.readNetFromONNX(onnx_model_path)
-        self.net = cv2.dnn.readNetFromCaffe(caffe_proto_path, caffe_model_path)
+        self.model = cv2.dnn.readNetFromONNX('emotion-ferplus-8.onnx')
+        self.net = cv2.dnn.readNetFromCaffe('RFB-320/RFB-320.prototxt', 'RFB-320/RFB-320.caffemodel')
         self.input_size = [320, 240]
         self.width = self.input_size[0]
         self.height = self.input_size[1]
