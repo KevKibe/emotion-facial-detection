@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 MODEL_LOCAL_PATH = "RFB-320/RFB-320.caffemodel"
 PROTOTXT_LOCAL_PATH = "RFB-320/RFB-320.prototxt"
-
+MODEL_LOCAL_PATH_ONNX = "emotion-ferplus-8.onnx"
 CLASSES = [
             'neutral', 
             'smiling', 
@@ -52,7 +52,7 @@ cache_key = "object_detection_dnn"
 if cache_key in st.session_state:
     net = st.session_state[cache_key]
 else:
-    net = cv2.dnn.readNetFromCaffe(str(PROTOTXT_LOCAL_PATH), str(MODEL_LOCAL_PATH))
+    net = cv2.dnn.readNetFromONNX(str(MODEL_LOCAL_PATH_ONNX))
     st.session_state[cache_key] = net
 
 score_threshold = st.slider("Score threshold", 0.0, 1.0, 0.5, 0.05)
