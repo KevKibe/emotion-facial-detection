@@ -3,6 +3,7 @@ import cv2
 import time 
 import math
 import streamlit as st
+from streamlit_webrtc import webrtc_streamer, VideoProcessorBase
 
 class EmotionDetector:
     def __init__(self, onnx_model_path, caffe_model_path, caffe_proto_path):
@@ -178,101 +179,13 @@ class EmotionDetector:
     def should_break(self):
         return cv2.waitKey(1) & 0xFF == ord('q')
 
-    def detect_emotions(self):
-        FRAME_WINDOW = st.image([])
-        cap = cv2.VideoCapture(0)
-        frame_width = int(cap.get(3))
-        frame_height = int(cap.get(4))
-        size = (frame_width, frame_height)
-        emotion_counts = {emotion: 0 for emotion in self.emotion_dict.values()}
-        try:
-            while cap.isOpened():
-                ret, frame = cap.read()
-                if ret:
-                    img_ori = frame
-                    rect = cv2.resize(img_ori, (self.width, self.height))
-                    rect = cv2.cvtColor(rect, cv2.COLOR_BGR2RGB)
-                    self.net.setInput(cv2.dnn.blobFromImage(
-                        rect, 1 / self.image_std, (self.width, self.height), 127)
-                     )
-                    start_time = time.time()
-                    boxes, scores = self.net.forward(["boxes", "scores"])
-                    boxes = np.expand_dims(np.reshape(boxes, (-1, 4)), axis=0)
-                    scores = np.expand_dims(np.reshape(scores, (-1, 2)), axis=0)
-                    boxes = self.convert_locations_to_boxes(
-                        boxes, self.priors, self.center_variance, self.size_variance
-                    )
-                    boxes = self.center_form_to_corner_form(boxes)
-                    boxes, labels, probs = self.predict(
-                        img_ori.shape[1], 
-                        img_ori.shape[0], 
-                        scores, 
-                        boxes, 
-                        self.threshold
-                    )
-                    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                    for (x1, y1, x2, y2) in boxes:
-                        w = x2 - x1
-                        h = y2 - y1
-                        cv2.rectangle(frame, (x1,y1), (x2, y2), (255,0,0), 2)
-                        resize_frame = cv2.resize(
-                            gray[y1:y1 + h, x1:x1 + w], (64, 64)
-                        )
-                        resize_frame = resize_frame.reshape(1, 1, 64, 64)
-                        self.model.setInput(resize_frame)
-                        output = self.model.forward()
-                        end_time = time.time()
-                        fps = 1 / (end_time - start_time)
-                        # print(f"FPS: {fps:.1f}")
-                        pred = self.emotion_dict[list(output[0]).index(max(output[0]))]
-                        # print(pred)
-                        emotion_counts[pred] += 1
-                        # print(emotion_counts)
-                        cv2.rectangle(
-                            img_ori, 
-                            (x1, y1), 
-                            (x2, y2), 
-                            (0, 255, 0), 
-                            2,
-                            lineType=cv2.LINE_AA
-                        )
-                        cv2.putText(
-                            frame, 
-                            pred, 
-                            (x1, y1), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 
-                            0.8, 
-                            (0, 255, 0), 
-                            2,
-                            lineType=cv2.LINE_AA
-                            )
-                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                    FRAME_WINDOW.image(frame)
-                    if self.should_break():
-                        break
-                else:
-                    break
-        except KeyboardInterrupt:
-            pass
-        finally:
-            cap.release()
-        return emotion_counts
-
-
-from streamlit_webrtc import webrtc_streamer, VideoTransformerBase, RTCConfiguration, VideoProcessorBase
-
-class EmotionVideoTransformer(VideoProcessorBase):
-    def __init__(self):
-        self.emotion_counts = {emotion: 0 for emotion in self.emotion_dict.values()}
-
-    def recv(self, frame):
-        img_ori = frame.to_ndarray(format="bgr24")
+    def on_frame(self, frame):
+        img_ori = frame
         rect = cv2.resize(img_ori, (self.width, self.height))
         rect = cv2.cvtColor(rect, cv2.COLOR_BGR2RGB)
         self.net.setInput(cv2.dnn.blobFromImage(
             rect, 1 / self.image_std, (self.width, self.height), 127)
         )
-        start_time = time.time()
         boxes, scores = self.net.forward(["boxes", "scores"])
         boxes = np.expand_dims(np.reshape(boxes, (-1, 4)), axis=0)
         scores = np.expand_dims(np.reshape(scores, (-1, 2)), axis=0)
@@ -298,10 +211,7 @@ class EmotionVideoTransformer(VideoProcessorBase):
             resize_frame = resize_frame.reshape(1, 1, 64, 64)
             self.model.setInput(resize_frame)
             output = self.model.forward()
-            end_time = time.time()
-            fps = 1 / (end_time - start_time)
             pred = self.emotion_dict[list(output[0]).index(max(output[0]))]
-            self.emotion_counts[pred] += 1
             cv2.rectangle(
                 img_ori, 
                 (x1, y1), 
@@ -319,18 +229,18 @@ class EmotionVideoTransformer(VideoProcessorBase):
                 (0, 255, 0), 
                 2,
                 lineType=cv2.LINE_AA
-                )
+            )
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         return frame
 
-def detect_emotions(self):
-    webrtc_streamer(key="example", mode=WebRtcMode.SENDRECV, rtc_configuration=RTCConfiguration({"iceServers": [{"urls": "stun:stun.l.google.com:19302"}]}), video_processor_factory=EmotionVideoTransformer)
-    return self.emotion_counts
+def main():
+    st.title("Emotion Detector")
+    
+    webrtc_ctx = webrtc_streamer(
+        key="emotion-detector",
+        video_processor_factory=EmotionDetector,
+        async_processing=True,
+    )
 
-# onnx_model_path = 'emotion-ferplus-8.onnx'
-# caffe_model_path = 'RFB-320/RFB-320.caffemodel'
-# caffe_proto_path = 'RFB-320/RFB-320.prototxt'
-# emotion_detector = EmotionDetector(onnx_model_path, caffe_model_path, caffe_proto_path)
-# count = emotion_detector.detect_emotions()
-# print(count)
-# print(type(count))
+if __name__ == "__main__":
+    main()
