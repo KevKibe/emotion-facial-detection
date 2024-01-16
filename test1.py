@@ -69,6 +69,7 @@ def video_frame_callback(frame: av.VideoFrame) -> av.VideoFrame:
     )
     net.setInput(blob)
     output = net.forward()
+    st.write(output.shape)
     print("Output shape:", output.shape)
     h, w = image.shape[:2]
 
