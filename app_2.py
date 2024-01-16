@@ -239,9 +239,9 @@ def main():
     st.title("Emotion Detector")
 
     try:
-        webrtc_ctx = webrtc_streamer(
+        webrtc_streamer(
             key="emotion-detector",
-            video_processor_factory=EmotionDetector
+            # video_processor_factory=EmotionDetector
             # async_processing=True,
         )
     except Exception as e:
