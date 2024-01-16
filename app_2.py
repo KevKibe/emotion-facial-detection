@@ -6,7 +6,7 @@ import streamlit as st
 from streamlit_webrtc import webrtc_streamer, VideoProcessorBase
 
 class EmotionDetector:
-    def __init__(self, onnx_model_path, caffe_model_path, caffe_proto_path):
+    def __init__(self):
         self.image_mean = np.array([127, 127, 127])
         self.image_std = 128.0
         self.iou_threshold = 0.3
